@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Страница пользователя {{ profile.username }}
+{% endblock %}
+
+{% block content %}
+<h1 class="mb-5 text-center">Страница пользователя {{ profile.username }}</h1>
+
+<div class="d-flex justify-content-center mb-4">
+    <ul class="list-group list-group-horizontal">
+        <li class="list-group-item text-muted">
+            Имя пользователя: {% if profile.get_full_name %}{{ profile.get_full_name }}{% else %}не указано{% endif %}
+        </li>
+        <li class="list-group-item text-muted">
+            Регистрация: {{ profile.date_joined|date:"d.m.Y H:i" }}
+        </li>
+        <li class="list-group-item text-muted">
+            Роль: {% if profile.is_staff %}Админ{% else %}Пользователь{% endif %}
+        </li>
+    </ul>
+</div>
+
+<div class="d-flex justify-content-center mb-5">
+    {% if user.is_authenticated and request.user == profile %}
+    <div class="btn-group" role="group">
+        <a class="btn btn-outline-secondary btn-sm" href="{% url 'blog:edit_profile' profile.username %}">
+            Редактировать профиль
+        </a>
+        <a class="btn btn-outline-secondary btn-sm" href="{% url 'password_change' %}">
+            Изменить пароль
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<h3 class="mb-5 text-center">Публикации пользователя</h3>
+
+  {% if page_obj %}
+    {% for post in page_obj %}
+<article class="mb-5">
+    {% include "includes/post_card.html" %}
+</article>
+    {% endfor %}
+
+    {% include "includes/paginator.html" %}
+  {% else %}
+<p class="text-center text-muted">У пользователя пока нет публикаций.</p>
+  {% endif %}
+{% endblock %}
