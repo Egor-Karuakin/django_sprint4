@@ -1,13 +1,13 @@
-п»їfrom django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.core.paginator import Paginator
-from django.http import Http404
 from .models import Post, Comment, Category
 from .forms import PostForm, CommentForm
+from django.http import Http404
 
 User = get_user_model()
 
@@ -25,17 +25,14 @@ def index(request):
 
 
 def post_detail(request, pk):
+    """Страница отдельной публикации"""
     post = get_object_or_404(Post, pk=pk)
     
-    # РџСЂРѕРІРµСЂРєР° РґРѕСЃС‚СѓРїР°
-    is_author = request.user == post.author
-    
-    # Р•СЃР»Рё РїРѕСЃС‚ РЅРµ РѕРїСѓР±Р»РёРєРѕРІР°РЅ РёР»Рё РґР°С‚Р° РІ Р±СѓРґСѓС‰РµРј РёР»Рё РєР°С‚РµРіРѕСЂРёСЏ РЅРµ РѕРїСѓР±Р»РёРєРѕРІР°РЅР°
-    if (not post.is_published or 
-        post.pub_date > timezone.now() or 
-        not post.category.is_published):
-        if not is_author:
-            raise Http404("Post not available")
+    # Если пост снят с публикации или дата в будущем
+    if not post.is_published or post.pub_date > timezone.now():
+        # Разрешаем доступ только автору
+        if request.user != post.author:
+            raise Http404("Пост не опубликован или ещё не наступила дата публикации")
     
     comments = post.comments.all()
     form = CommentForm()
